@@ -1,5 +1,6 @@
 function solution(begin, target, words) {
     const n = words.length;
+    if (!words.includes(target)) return 0;
     
     function diff1(a, b) {
         let diff = 0;
