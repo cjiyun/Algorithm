@@ -5,9 +5,9 @@ Study Algorithms
 ### 플랫폼
 
 > **Algorithm**  
-> &nbsp; **Baekjoon** &nbsp; [↗][백준]  
+> **Baekjoon** &nbsp; [↗][백준]  
 >   : 백준 온라인 저지 문제 풀이  
-> &nbsp; **Programmers** &nbsp; [↗][프로그래머스]  
+> **Programmers** &nbsp; [↗][프로그래머스]  
 >   : 프로그래머스 문제 풀이
 
 <br>
@@ -26,10 +26,5 @@ Study Algorithms
 그 외 : 자료구조(스택, 큐, 트리), 정렬, 위상정렬, 플러드 필(Flood Fill), Segment 트리, 해싱 등
 
 
-[백준]: ./Baekjoon
-[프로그래머스]: ./Programmers
-
-[Pausing]: https://img.shields.io/badge/-Pausing-red
-[ToDo]: https://img.shields.io/badge/-ToDo-yellow
-[Doing]: https://img.shields.io/badge/-Doing-green
-[Done]: https://img.shields.io/badge/-Done-blue
+[백준]: ./백준
+[프로그래머스]: ./프로그래머스
