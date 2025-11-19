@@ -17,7 +17,8 @@
 | 01 | 카드 정렬하기 |  [1715](https://www.acmicpc.net/problem/1715)  | <img src="https://static.solved.ac/tier_small/12.svg" width="20px"/> |        그리디, 우선순위 큐        |     [보기](./Gold/1715. 카드 정렬하기/카드 정렬하기.js)     |  |
 | 02 | 강의실 배정  | [11000](https://www.acmicpc.net/problem/11000) | <img src="https://static.solved.ac/tier_small/12.svg" width="20px"/> |      그리디, 정렬, 우선순위 큐      |     [보기](./Gold/11000. 강의실 배정/강의실 배정.js)      |  |
 | 03 | 회의실 배정  |  [1931](https://www.acmicpc.net/problem/1931)  | <img src="https://static.solved.ac/tier_small/11.svg" width="20px"/> |          그리디, 정렬          |      [보기](./Gold/1931. 회의실 배정/회의실 배정.js)      |  |
-| 03 | 직사각형 탈출 | [16973](https://www.acmicpc.net/problem/16973) | <img src="https://static.solved.ac/tier_small/12.svg" width="20px"/> | 그래프 이론, 그래프 탐색, 누적 합, BFS | [보기](./Gold/16973. 직사각형 탈출/직사각형 탈출.js) |  |
+| 04 | 직사각형 탈출 | [16973](https://www.acmicpc.net/problem/16973) | <img src="https://static.solved.ac/tier_small/12.svg" width="20px"/> | 그래프 이론, 그래프 탐색, 누적 합, BFS | [보기](./Gold/16973. 직사각형 탈출/직사각형 탈출.js) |  |
+| 05 | 점프 게임   | [15558](https://www.acmicpc.net/problem/15558) | <img src="https://static.solved.ac/tier_small/11.svg" width="20px"/> |    그래프 이론, 그래프 탐색, BFS    | [보기](./Gold/15558. 점프 게임/점프 게임.js)     |  |
 
 ### 🥈 Silver
 
