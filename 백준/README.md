@@ -22,8 +22,8 @@
 
 ### 🥈 Silver
 
-|  번호  |  문제 이름   |                     문제 번호                      |                                 난이도                                  |            유형            |                        코드                         |  재도전  |
-| :-----: |:--------:|:----------------------------------------------:|:--------------------------------------------------------------------:|:------------------------:|:-------------------------------------------------:| :-----: |
+| 번호 |  문제 이름   |                     문제 번호                      |                                 난이도                                  |            유형            |                        코드                         |  재도전  |
+|:--:|:--------:|:----------------------------------------------:|:--------------------------------------------------------------------:|:------------------------:|:-------------------------------------------------:| :-----: |
 | 01 |  A → B   | [16953](https://www.acmicpc.net/problem/16953) | <img src="https://static.solved.ac/tier_small/9.svg" width="20px"/>  | 그래프 이론, 그리디, 그래프 탐색, BFS |       [보기](./Silver/16953. A → B/A → B.js)        |  |
 | 02 |  볼 모으기   | [17615](https://www.acmicpc.net/problem/17615) | <img src="https://static.solved.ac/tier_small/10.svg" width="20px"/> |           그리디            |       [보기](./Silver/17615. 볼 모으기/볼 모으기.js)        |  |
 | 03 |    팔     |  [1105](https://www.acmicpc.net/problem/1105)  | <img src="https://static.solved.ac/tier_small/10.svg" width="20px"/> |         수학, 그리디          |            [보기](./Silver/1105. 팔/팔.js)            |  |
@@ -35,7 +35,8 @@
 | 09 |    보물    |  [1026](https://www.acmicpc.net/problem/1026)  | <img src="https://static.solved.ac/tier_small/7.svg" width="20px"/>  |       수학, 그리디, 정렬        |           [보기](./Silver/1026. 보물/보물.js)           |  |
 | 10 |   주유소    | [13305](https://www.acmicpc.net/problem/13305) | <img src="https://static.solved.ac/tier_small/8.svg" width="20px"/>  |           그리디            |         [보기](./Silver/13305. 주유소/주유소.js)          |  |
 | 11 | 잃어버린 괄호  |  [1541](https://www.acmicpc.net/problem/1541)  | <img src="https://static.solved.ac/tier_small/9.svg" width="20px"/>  |     수학, 그리디, 문자열, 파싱     |      [보기](./Silver/1541. 잃어버린 괄호/잃어버린 괄호.js)      |  |
-| 12 | 카드 합체 놀이 | [15903](https://www.acmicpc.net/problem/15903)  | <img src="https://static.solved.ac/tier_small/10.svg" width="20px"/> |       그리디, 우선순위 큐        | [보기](./Silver/15903. 카드 합체 놀이/카드 합체 놀이.js) |  |
+| 12 | 카드 합체 놀이 | [15903](https://www.acmicpc.net/problem/15903) | <img src="https://static.solved.ac/tier_small/10.svg" width="20px"/> |       그리디, 우선순위 큐        | [보기](./Silver/15903. 카드 합체 놀이/카드 합체 놀이.js) |  |
+| 13 |   숨바꼭질   |  [1697](https://www.acmicpc.net/problem/1697)  | <img src="https://static.solved.ac/tier_small/10.svg" width="20px"/> |   그래프 이론, 그래프 탐색, BFS    | [보기](./Silver/1697. 숨바꼭질/숨바꼭질.js) |  |
 
 ### 🥉 Bronze
 
