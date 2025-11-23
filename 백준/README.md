@@ -40,6 +40,17 @@
 
 ### 🥉 Bronze
 
+| 번호 |     문제 이름     |                     문제 번호                      |                                 난이도                                 |            유형            |                            코드                            |  재도전  |
+|:--:|:-------------:|:----------------------------------------------:|:-------------------------------------------------------------------:|:------------------------:|:--------------------------------------------------------:| :-----: |
+| 01 |      A×B      | [10998](https://www.acmicpc.net/problem/10998) | <img src="https://static.solved.ac/tier_small/1.svg" width="20px"/> | 구현, 사칙연산, 수학 |             [보기](./Bronze/10998. A×B/A×B.js)             |  |
+| 02 |      고양이      | [10171](https://www.acmicpc.net/problem/10171) | <img src="https://static.solved.ac/tier_small/1.svg" width="20px"/> |           구현            |             [보기](./Bronze/10171. 고양이/고양이.js)             |  |
+| 03 |      A／B      |  [1008](https://www.acmicpc.net/problem/1008)  | <img src="https://static.solved.ac/tier_small/1.svg" width="20px"/> |         구현, 사칙연산, 수학          |             [보기](./Bronze/1008. A／B/A／B.js)              |  |
+| 04 |      A+B      |  [1000](https://www.acmicpc.net/problem/1000)  | <img src="https://static.solved.ac/tier_small/1.svg" width="20px"/> |         구현, 사칙연산, 수학          |             [보기](./Bronze/1000. A+B/A+B.js)              |  |
+| 05 |      A-B      |  [1001](https://www.acmicpc.net/problem/1001)  | <img src="https://static.solved.ac/tier_small/1.svg" width="20px"/> |         구현, 사칙연산, 수학         |             [보기](./Bronze/1001. A-B/A-B.js)              |  |
+| 06 | We love kriii | [10718](https://www.acmicpc.net/problem/10718) | <img src="https://static.solved.ac/tier_small/1.svg" width="20px"/> |         구현          |   [보기](./Bronze/10718. We love kriii/We love kriii.js)   |  |
+| 07 |     사칙연산      | [10869](https://www.acmicpc.net/problem/10869) | <img src="https://static.solved.ac/tier_small/1.svg" width="20px"/> |           구현, 사칙연산, 수학            |            [보기](./Bronze/10869. 사칙연산/사칙연산.js)            |  |
+| 08 |  Hello World  |  [2557](https://www.acmicpc.net/problem/2557)  | <img src="https://static.solved.ac/tier_small/1.svg" width="20px"/> |       구현        |              [보기](./Bronze/2557. Hello World/Hello World.js)              |  |
+
 [Bronze5]: https://static.solved.ac/tier_small/1.svg
 [Bronze4]: https://static.solved.ac/tier_small/2.svg
 [Bronze3]: https://static.solved.ac/tier_small/3.svg
