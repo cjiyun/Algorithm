@@ -7,11 +7,15 @@ const [[N, M], ...paper] = require('fs')
 const inRange = (r, c) => r >= 0 && r < N && c >= 0 && c < M;
 const visited = Array.from(Array(N), () => Array(M).fill(false));
 const dr = [0, 1, 0, -1], dc = [1, 0, -1, 0];
-let max = 0;
+
+const maxVal = Math.max(...paper.flat());
+let maxSum = 0;
 
 const dfs = (r, c, sum, cnt) => {
+  if (sum + (4 - cnt) * maxVal <= maxSum) return;
+
   if (cnt === 4) {
-    max = Math.max(max, sum);
+    maxSum = Math.max(maxSum, sum);
     return;
   }
 
@@ -39,4 +43,4 @@ for (let i = 0; i < N; i++) {
   }
 }
 
-console.log(max);
+console.log(maxSum);
