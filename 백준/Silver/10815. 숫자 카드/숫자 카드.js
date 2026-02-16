@@ -6,7 +6,7 @@ let [_N, A, _M, X] = require('fs')
 
 A = new Set(A);
 
-const ans = [];
-for (const x of X) ans.push(A.has(x) ? 1 : 0);
+let ans = '';
+for (const x of X) ans += (A.has(x) ? '1 ' : '0 ');
 
-console.log(ans.join('\n'));
+console.log(ans);
