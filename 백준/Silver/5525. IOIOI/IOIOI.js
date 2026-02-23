@@ -8,22 +8,15 @@ const N = Number(input[line++]);
 const M = Number(input[line++]);
 const S = input[line++].split('');
 
-const len = 2 * N + 1
-const q = [];
+let IOI = 0;
 let cnt = 0;
 
-for (const ch of S) {
-  q.push(ch);
-  if (ch === 'I' && q.length >= len) {
-    let isP = true;
-    for (let i = 0; i < len; i++) {
-      if (i % 2 === 0 && q[q.length - len + i] === 'I') continue;
-      if (i % 2 !== 0 && q[q.length - len + i] === 'O') continue;
-      isP = false;
-      break;
-    }
-    if (isP) cnt++;
-  }
+for (let i = 1; i < M - 1; i++) {
+  if (S[i - 1] === 'I' && S[i] === 'O' && S[i + 1] === 'I') {
+    IOI++;
+    if (IOI >= N) cnt++;
+    i++;
+  } else IOI = 0;
 }
 
 console.log(cnt);
