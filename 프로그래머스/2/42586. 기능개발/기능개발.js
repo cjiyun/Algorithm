@@ -1,23 +1,18 @@
 function solution(progresses, speeds) {
-    const ans = [];
-    let cnt = 0;
-    
+    const ans = [0];
+    const days = [];
     for (let i = 0; i < progresses.length; i++) {
-        if (progresses[i] >= 100) {
-            cnt++;
-            continue;
-        }
-        if (cnt !== 0) ans.push(cnt);
-        cnt = 0;
-        
-        const p = Math.ceil((100 - progresses[i]) / speeds[i]);
-        
-        for (let j = i; j < progresses.length; j++) {
-            progresses[j] += speeds[j] * p;
-        }
-        if (progresses[i] >= 100) cnt++;
+        days[i] = Math.ceil((100 - progresses[i]) / speeds[i]);
     }
-    ans.push(cnt);
+    let max = days[0];
+    
+    for (let i = 0, j = 0; i < progresses.length; i++) {
+        if (days[i] <= max) ans[j] += 1;
+        else {
+            max = days[i];
+            ans[++j] = 1;
+        }
+    }
     
     return ans;
 }
