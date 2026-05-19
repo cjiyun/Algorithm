@@ -1,6 +1,8 @@
-def solution(arr, query):    
-    for i, v in enumerate(query):
-        if (i % 2 == 0): arr = arr[:v + 1]
-        else: arr = arr[v:]
+def solution(arr, query):   
+    start, end = 0, len(arr) - 1
     
-    return arr
+    for i, q in enumerate(query):
+        if i % 2 == 0: end = start + q
+        else: start = start + q
+    
+    return arr[start:end + 1]
