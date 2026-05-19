@@ -14,6 +14,7 @@ Study Algorithms
 
 ### 사용 언어
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E.svg?&style=for-the-badge&logo=JavaScript&logoColor=white)
+![Python3](https://img.shields.io/badge/Python-#3776AB.svg?&style=for-the-badge&logo=JavaScript&logoColor=white)
 
 <br>
 
