@@ -1,17 +1,8 @@
 def solution(numbers, target):
-    cnt = 0
-    
-    def dfs(t, i):
-        nonlocal cnt
-        
+    def dfs(i, cur_tar):
         if i == len(numbers):
-            if t == target:
-                cnt += 1
-            return
+            return 1 if cur_tar == 0 else 0
         
-        dfs(t + numbers[i], i + 1)
-        dfs(t - numbers[i], i + 1)
+        return dfs(i + 1, cur_tar + numbers[i]) + dfs(i + 1, cur_tar - numbers[i])
     
-    dfs(0, 0)
-    
-    return cnt
+    return dfs(0, target)
