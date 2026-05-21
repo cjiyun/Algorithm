@@ -1,4 +1,4 @@
 def solution(rank, attendance):
-    selected = sorted([i for i in range(len(rank)) if attendance[i]], key=lambda i: rank[i])[:3]
+    selected = sorted([(x, i) for i, x in enumerate(rank) if attendance[i]])
     
-    return 10000 * selected[0] + 100 * selected[1] + selected[2]
+    return 10000 * selected[0][1] + 100 * selected[1][1] + selected[2][1]
