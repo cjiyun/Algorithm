@@ -1,11 +1,5 @@
+import re
+
 def solution(babbling):
-    answer = 0
-    words= ["aya", "ye", "woo", "ma"]
-    
-    for b in babbling:
-        for w in words:
-            b = b.replace(w, " ")
-        
-        if not b.strip(): answer += 1
-        
-    return answer
+    regex = re.compile('^(aya|ye|woo|ma)+$')
+    return sum(1 for e in babbling if regex.match(e))
