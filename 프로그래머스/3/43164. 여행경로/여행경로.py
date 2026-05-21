@@ -1,36 +1,22 @@
-import sys
-sys.setrecursionlimit(10**6)
+from collections import defaultdict
 
 def solution(tickets):
-    n = len(tickets)
-    tickets.sort()
-    visited = [False] * n
-    ans = []
+    routes = defaultdict(list)
     
-    def dfs(route):
-        nonlocal ans
-        
-        if len(route) == n + 1:
-            ans = route[:]
-            return True
-        
-        cur = route[-1]
-        
-        for i in range(n):
-            start, end = tickets[i]
-            
-            if visited[i] or start != cur: continue
-            
-            visited[i] = True
-            route.append(end)
-            
-            if dfs(route): return True
-            
-            route.pop()
-            visited[i] = False
-        
-        return False
+    for start, end in tickets:
+        routes[start].append(end)
     
-    dfs(['ICN'])
+    for start in routes:
+        routes[start].sort(reverse=True)
     
-    return ans
+    path = []
+    
+    def dfs(airport):
+        while routes[airport]:
+            dfs(routes[airport].pop())
+        
+        path.append(airport)
+    
+    dfs('ICN')
+    
+    return path[::-1]
