@@ -1,23 +1,12 @@
-from collections import Counter
-
 def solution(id_list, report, k):
-    report_details = {user: set() for user in id_list}
-    for detail in report:
-        reporter, reported = detail.split(' ')
-        report_details[reporter].add(reported)
-    
-    report_cnt = Counter()
-    for v in report_details.values():
-        for r in v:
-            report_cnt[r] += 1
-    
-    suspended = set()
-    for u, cnt in report_cnt.items():
-        if cnt >= k:
-            suspended.add(u)
-    
-    ans = []
-    for u, v in report_details.items():
-        ans.append(len(v & suspended))
-    
-    return ans
+    answer = [0] * len(id_list)    
+    reports = {x: 0 for x in id_list}
+
+    for r in set(report):
+        reports[r.split()[1]] += 1
+
+    for r in set(report):
+        if reports[r.split()[1]] >= k:
+            answer[id_list.index(r.split()[0])] += 1
+
+    return answer
