@@ -1,8 +1,11 @@
 def solution(video_len, pos, op_start, op_end, commands):
-    video_len = int(video_len.split(':')[0]) * 60 + int(video_len.split(':')[1])
-    pos = int(pos.split(':')[0]) * 60 + int(pos.split(':')[1])
-    op_start = int(op_start.split(':')[0]) * 60 + int(op_start.split(':')[1])
-    op_end = int(op_end.split(':')[0]) * 60 + int(op_end.split(':')[1])
+    def time_to_sec(t):
+        return int(t.split(':')[0]) * 60 + int(t.split(':')[1])
+    
+    video_len = time_to_sec(video_len)
+    pos = time_to_sec(pos)
+    op_start = time_to_sec(op_start)
+    op_end = time_to_sec(op_end)
     
     for command in commands:
         if op_start <= pos <= op_end:
