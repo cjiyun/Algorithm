@@ -7,10 +7,10 @@ const repo = process.env.GITHUB_REPOSITORY;
 const sha = process.env.GITHUB_SHA;
 const branch = process.env.GITHUB_REF_NAME || "main";
 
-const DATABASE_IDS = {
-  programmers: process.env.NOTION_PROGRAMMERS_DATABASE_ID,
-  swea: process.env.NOTION_SWEA_DATABASE_ID,
-  baekjoon: process.env.NOTION_BAEKJOON_DATABASE_ID,
+const DATA_SOURCE_IDS = {
+  programmers: process.env.NOTION_PROGRAMMERS_DATA_SOURCE_ID,
+  swea: process.env.NOTION_SWEA_DATA_SOURCE_ID,
+  baekjoon: process.env.NOTION_BAEKJOON_DATA_SOURCE_ID,
 };
 
 function run(command) {
@@ -36,14 +36,16 @@ function getCommitMessage() {
 }
 
 function getChangedFiles() {
-  const output = run(`git diff-tree --no-commit-id --name-only -r ${sha}`);
+  const output = run(
+    `git diff-tree --no-commit-id --name-only -r ${sha}`,
+  );
+
   if (!output) return [];
+
   return output.split("\n").filter(Boolean);
 }
 
 function parseCommitMessage(message) {
-  // 예:
-  // [level 1] Title: 달리기 경주, Time: 459.27 ms, Memory: 73.3 MB -BaekjoonHub
   const programmersRegex =
     /^\[level\s*(\d+)\]\s*Title:\s*(.*?),\s*Time:\s*(.*?),\s*Memory:\s*(.*?)\s*-BaekjoonHub/i;
 
@@ -58,12 +60,13 @@ function parseCommitMessage(message) {
     };
   }
 
-  // BaekjoonHub의 다른 형식이 들어와도 최소한 제목만 추출 시도
   const titleMatch = message.match(/Title:\s*(.*?)(?:,|$)/i);
 
   return {
     difficulty: "",
-    title: titleMatch ? normalizeSpaces(titleMatch[1]) : "",
+    title: titleMatch
+      ? normalizeSpaces(titleMatch[1])
+      : "",
     time: "",
     memory: "",
   };
@@ -72,7 +75,10 @@ function parseCommitMessage(message) {
 function detectPlatform(rawPlatform) {
   const platform = normalizeSpaces(rawPlatform).toLowerCase();
 
-  if (rawPlatform === "프로그래머스" || platform.includes("programmers")) {
+  if (
+    rawPlatform === "프로그래머스" ||
+    platform.includes("programmers")
+  ) {
     return {
       key: "programmers",
       name: "프로그래머스",
@@ -86,7 +92,10 @@ function detectPlatform(rawPlatform) {
     };
   }
 
-  if (rawPlatform === "백준" || platform.includes("baekjoon")) {
+  if (
+    rawPlatform === "백준" ||
+    platform.includes("baekjoon")
+  ) {
     return {
       key: "baekjoon",
       name: "백준",
@@ -101,10 +110,6 @@ function detectPlatform(rawPlatform) {
 
 function parseProblemFolder(problemFolder) {
   const normalized = normalizeSpaces(problemFolder);
-
-  // 예:
-  // 12906. 같은 숫자는 싫어
-  // 1208. Flatten
   const match = normalized.match(/^(\d+)\.\s*(.+)$/);
 
   if (!match) {
@@ -171,31 +176,40 @@ function isSolutionFile(filePath) {
 function parseFilePath(filePath, allChangedFiles) {
   const parts = filePath.split("/");
 
-  // 예:
-  // 프로그래머스/1/12906. 같은 숫자는 싫어/같은 숫자는 싫어.js
-  // SWEA/D3/1208. Flatten/Flatten.java
-  // 백준/Silver/1000. A＋B/A＋B.py
   const rawPlatform = parts[0];
   const rawDifficulty = parts[1];
   const problemFolder = parts[2];
 
   const platform = detectPlatform(rawPlatform);
 
-  if (!rawPlatform || !rawDifficulty || !problemFolder || !platform.key) {
+  if (
+    !rawPlatform ||
+    !rawDifficulty ||
+    !problemFolder ||
+    !platform.key
+  ) {
     return null;
   }
 
-  const { problemNumber, title } = parseProblemFolder(problemFolder);
+  const { problemNumber, title } =
+    parseProblemFolder(problemFolder);
 
-  const problemDir = `${rawPlatform}/${rawDifficulty}/${problemFolder}/`;
+  const problemDir =
+    `${rawPlatform}/${rawDifficulty}/${problemFolder}/`;
 
   const solutionFile =
-    allChangedFiles.find(file => file.startsWith(problemDir) && isSolutionFile(file)) ||
-    "";
+    allChangedFiles.find(
+      file =>
+        file.startsWith(problemDir) &&
+        isSolutionFile(file),
+    ) || "";
 
   const readmeFile =
-    allChangedFiles.find(file => file.startsWith(problemDir) && isReadme(file)) ||
-    "";
+    allChangedFiles.find(
+      file =>
+        file.startsWith(problemDir) &&
+        isReadme(file),
+    ) || "";
 
   let difficulty = normalizeSpaces(rawDifficulty);
 
@@ -221,16 +235,18 @@ function githubCommitUrl() {
 
 function githubBlobUrl(filePath) {
   if (!filePath) return null;
+
   return `https://github.com/${repo}/blob/${branch}/${encodePath(filePath)}`;
 }
 
 function githubTreeUrl(dirPath) {
   if (!dirPath) return null;
+
   return `https://github.com/${repo}/tree/${branch}/${encodePath(dirPath)}`;
 }
 
-function getDatabaseId(platformKey) {
-  return DATABASE_IDS[platformKey] || null;
+function getDataSourceId(platformKey) {
+  return DATA_SOURCE_IDS[platformKey] || null;
 }
 
 function createRichText(content = "") {
@@ -274,8 +290,16 @@ function createUrl(url) {
 }
 
 function buildProperties(info, commitInfo) {
-  const title = commitInfo.title || info.title || "알고리즘 문제";
-  const difficulty = commitInfo.difficulty || info.difficulty || "";
+  const title =
+    commitInfo.title ||
+    info.title ||
+    "알고리즘 문제";
+
+  const difficulty =
+    commitInfo.difficulty ||
+    info.difficulty ||
+    "";
+
   const language = getLanguage(info.solutionFile);
 
   const properties = {
@@ -293,14 +317,15 @@ function buildProperties(info, commitInfo) {
     메모리: createRichText(commitInfo.memory),
     "GitHub Commit": createUrl(githubCommitUrl()),
     "문제 폴더": createUrl(githubTreeUrl(info.problemDir)),
-    "풀이 파일": createUrl(githubBlobUrl(info.solutionFile)),
+    "풀이 파일": createUrl(
+      githubBlobUrl(info.solutionFile),
+    ),
     README: createUrl(githubBlobUrl(info.readmeFile)),
     "복습 필요": {
       checkbox: false,
     },
   };
 
-  // 값이 빈 select는 Notion API에서 오류가 날 수 있으므로 제거
   Object.keys(properties).forEach(key => {
     if (properties[key] === null) {
       delete properties[key];
@@ -310,7 +335,11 @@ function buildProperties(info, commitInfo) {
   return properties;
 }
 
-async function alreadyExists(databaseId, commitUrl, problemNumber) {
+async function alreadyExists(
+  dataSourceId,
+  commitUrl,
+  problemNumber,
+) {
   const filters = [
     {
       property: "GitHub Commit",
@@ -330,8 +359,8 @@ async function alreadyExists(databaseId, commitUrl, problemNumber) {
     });
   }
 
-  const response = await notion.databases.query({
-    database_id: databaseId,
+  const response = await notion.dataSources.query({
+    data_source_id: dataSourceId,
     filter: {
       and: filters,
     },
@@ -355,9 +384,11 @@ function groupByProblem(changedFiles) {
 
   for (const file of algorithmFiles) {
     const parts = file.split("/");
+
     if (parts.length < 3) continue;
 
     const key = parts.slice(0, 3).join("/");
+
     if (!groups.has(key)) {
       groups.set(key, []);
     }
@@ -368,10 +399,10 @@ function groupByProblem(changedFiles) {
   return Array.from(groups.values());
 }
 
-async function createNotionPage(databaseId, properties) {
+async function createNotionPage(dataSourceId, properties) {
   return notion.pages.create({
     parent: {
-      database_id: databaseId,
+      data_source_id: dataSourceId,
     },
     properties,
   });
@@ -383,7 +414,9 @@ async function main() {
   }
 
   if (!repo) {
-    throw new Error("GITHUB_REPOSITORY가 설정되지 않았습니다.");
+    throw new Error(
+      "GITHUB_REPOSITORY가 설정되지 않았습니다.",
+    );
   }
 
   if (!sha) {
@@ -400,40 +433,70 @@ async function main() {
   const problemGroups = groupByProblem(changedFiles);
 
   if (problemGroups.length === 0) {
-    console.log("동기화할 알고리즘 문제 파일이 없습니다.");
+    console.log(
+      "동기화할 알고리즘 문제 파일이 없습니다.",
+    );
     return;
   }
 
   const commitUrl = githubCommitUrl();
 
   for (const files of problemGroups) {
-    const representativeFile = files.find(isSolutionFile) || files[0];
-    const info = parseFilePath(representativeFile, files);
+    const representativeFile =
+      files.find(isSolutionFile) ||
+      files[0];
+
+    const info = parseFilePath(
+      representativeFile,
+      files,
+    );
 
     if (!info) {
-      console.log(`문제 정보를 파싱하지 못했습니다: ${representativeFile}`);
+      console.log(
+        `문제 정보를 파싱하지 못했습니다: ${representativeFile}`,
+      );
       continue;
     }
 
-    const databaseId = getDatabaseId(info.platformKey);
+    const dataSourceId =
+      getDataSourceId(info.platformKey);
 
-    if (!databaseId) {
-      console.log(`플랫폼 DB ID가 설정되지 않았습니다: ${info.platformName}`);
+    if (!dataSourceId) {
+      console.log(
+        `플랫폼 Data Source ID가 설정되지 않았습니다: ` +
+          info.platformName,
+      );
       continue;
     }
 
-    const exists = await alreadyExists(databaseId, commitUrl, info.problemNumber);
+    const exists = await alreadyExists(
+      dataSourceId,
+      commitUrl,
+      info.problemNumber,
+    );
 
     if (exists) {
-      console.log(`이미 Notion에 기록된 문제입니다: ${info.title}`);
+      console.log(
+        `이미 Notion에 기록된 문제입니다: ${info.title}`,
+      );
       continue;
     }
 
-    const properties = buildProperties(info, commitInfo);
+    const properties = buildProperties(
+      info,
+      commitInfo,
+    );
 
-    await createNotionPage(databaseId, properties);
+    await createNotionPage(
+      dataSourceId,
+      properties,
+    );
 
-    console.log(`Notion 동기화 완료: [${info.platformName}] ${commitInfo.title || info.title}`);
+    console.log(
+      `Notion 동기화 완료: ` +
+        `[${info.platformName}] ` +
+        `${commitInfo.title || info.title}`,
+    );
   }
 }
 
