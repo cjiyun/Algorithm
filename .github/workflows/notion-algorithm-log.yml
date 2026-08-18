@@ -1,0 +1,34 @@
+name: Sync Algorithm Commit to Notion
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync-to-notion:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install @notionhq/client
+
+      - name: Sync latest commit to Notion
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_PROGRAMMERS_DATABASE_ID: ${{ secrets.NOTION_PROGRAMMERS_DATABASE_ID }}
+          NOTION_SWEA_DATABASE_ID: ${{ secrets.NOTION_SWEA_DATABASE_ID }}
+          NOTION_BAEKJOON_DATABASE_ID: ${{ secrets.NOTION_BAEKJOON_DATABASE_ID }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: node scripts/sync-notion-algorithm.js
