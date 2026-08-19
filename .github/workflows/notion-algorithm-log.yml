@@ -26,9 +26,9 @@ jobs:
       - name: Sync latest commit to Notion
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
-          NOTION_PROGRAMMERS_DATABASE_ID: ${{ secrets.NOTION_PROGRAMMERS_DATABASE_ID }}
-          NOTION_SWEA_DATABASE_ID: ${{ secrets.NOTION_SWEA_DATABASE_ID }}
-          NOTION_BAEKJOON_DATABASE_ID: ${{ secrets.NOTION_BAEKJOON_DATABASE_ID }}
+          NOTION_PROGRAMMERS_DATA_SOURCE_ID: ${{ secrets.NOTION_PROGRAMMERS_DATA_SOURCE_ID }}
+          NOTION_SWEA_DATA_SOURCE_ID: ${{ secrets.NOTION_SWEA_DATA_SOURCE_ID }}
+          NOTION_BAEKJOON_DATA_SOURCE_ID: ${{ secrets.NOTION_BAEKJOON_DATA_SOURCE_ID }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           GITHUB_SHA: ${{ github.sha }}
         run: node scripts/sync-notion-algorithm.js

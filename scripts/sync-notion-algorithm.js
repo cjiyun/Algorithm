@@ -37,12 +37,12 @@ function getCommitMessage() {
 
 function getChangedFiles() {
   const output = run(
-    `git diff-tree --no-commit-id --name-only -r ${sha}`,
+    `git diff-tree --no-commit-id --name-only -r -z ${sha}`,
   );
 
   if (!output) return [];
 
-  return output.split("\n").filter(Boolean);
+  return output.split("\0").filter(Boolean);
 }
 
 function parseCommitMessage(message) {
@@ -411,6 +411,16 @@ async function createNotionPage(dataSourceId, properties) {
 async function main() {
   if (!process.env.NOTION_TOKEN) {
     throw new Error("NOTION_TOKEN이 설정되지 않았습니다.");
+  }
+
+  const missingDataSourceIds = Object.entries(DATA_SOURCE_IDS)
+    .filter(([, dataSourceId]) => !dataSourceId)
+    .map(([platformKey]) => platformKey);
+
+  if (missingDataSourceIds.length > 0) {
+    throw new Error(
+      `Notion Data Source ID가 설정되지 않았습니다: ${missingDataSourceIds.join(", ")}`,
+    );
   }
 
   if (!repo) {
