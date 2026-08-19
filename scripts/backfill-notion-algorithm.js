@@ -4,6 +4,10 @@ const path = require("path");
 const { execSync } = require("child_process");
 
 const notion = new Client({ auth: process.env.NOTION_TOKEN });
+const apiCallCounts = {
+  query: 0,
+  create: 0,
+};
 
 const repo = process.env.GITHUB_REPOSITORY || "cjiyun/Algorithm";
 const branch = process.env.GITHUB_REF_NAME || getCurrentBranch() || "main";
@@ -343,40 +347,52 @@ function findProblemEntries() {
   return entries;
 }
 
-async function alreadyExists(dataSourceId, problemNumber, title) {
-  const filters = [];
+function getPropertyText(property) {
+  const value = property?.title || property?.rich_text;
 
-  if (problemNumber) {
-    filters.push({
-      property: "문제 번호",
-      rich_text: {
-        equals: problemNumber,
-      },
+  return normalizeSpaces(
+    value?.map(item => item.plain_text || item.text?.content || "").join("") || "",
+  );
+}
+
+function addExistingKeys(keys, page) {
+  const problemNumber = getPropertyText(page.properties?.["문제 번호"]);
+  const title = getPropertyText(page.properties?.["문제명"]);
+
+  if (problemNumber) keys.add(`number:${problemNumber}`);
+  if (title) keys.add(`title:${title.toLowerCase()}`);
+}
+
+async function getExistingKeys(dataSourceId) {
+  const keys = new Set();
+  let startCursor;
+
+  do {
+    apiCallCounts.query += 1;
+
+    const response = await notion.dataSources.query({
+      data_source_id: dataSourceId,
+      page_size: 100,
+      ...(startCursor ? { start_cursor: startCursor } : {}),
     });
-  }
 
-  if (title) {
-    filters.push({
-      property: "문제명",
-      title: {
-        equals: title,
-      },
-    });
-  }
+    response.results.forEach(page => addExistingKeys(keys, page));
+    startCursor = response.has_more ? response.next_cursor : null;
+  } while (startCursor);
 
-  if (filters.length === 0) return false;
+  return keys;
+}
 
-  const response = await notion.dataSources.query({
-    data_source_id: dataSourceId,
-    filter: {
-      or: filters,
-    },
-  });
-
-  return response.results.length > 0;
+function entryExists(keys, entry) {
+  return (
+    (entry.problemNumber && keys.has(`number:${entry.problemNumber}`)) ||
+    (entry.title && keys.has(`title:${entry.title.toLowerCase()}`))
+  );
 }
 
 async function createNotionPage(dataSourceId, properties) {
+  apiCallCounts.create += 1;
+
   return notion.pages.create({
     parent: {
       data_source_id: dataSourceId,
@@ -402,6 +418,19 @@ async function main() {
     return;
   }
 
+  const existingKeysByDataSource = new Map();
+
+  for (const dataSourceId of Object.values(DATA_SOURCE_IDS)) {
+    if (!dataSourceId || existingKeysByDataSource.has(dataSourceId)) {
+      continue;
+    }
+
+    existingKeysByDataSource.set(
+      dataSourceId,
+      await getExistingKeys(dataSourceId),
+    );
+  }
+
   let createdCount = 0;
   let skippedCount = 0;
   let failedCount = 0;
@@ -420,18 +449,10 @@ async function main() {
     }
 
     try {
-      const exists = await alreadyExists(
-        dataSourceId,
-        entry.problemNumber,
-        entry.title,
-      );
+      const existingKeys = existingKeysByDataSource.get(dataSourceId);
+      const exists = entryExists(existingKeys, entry);
 
       if (exists) {
-        console.log(
-          `이미 존재해서 건너뜀: ` +
-            `[${entry.platformName}] ${entry.title}`,
-        );
-
         skippedCount += 1;
         continue;
       }
@@ -439,6 +460,13 @@ async function main() {
       const properties = buildProperties(entry);
 
       await createNotionPage(dataSourceId, properties);
+
+      if (entry.problemNumber) {
+        existingKeys.add(`number:${entry.problemNumber}`);
+      }
+      if (entry.title) {
+        existingKeys.add(`title:${entry.title.toLowerCase()}`);
+      }
 
       console.log(
         `등록 완료: [${entry.platformName}] ${entry.title}`,
@@ -459,9 +487,15 @@ async function main() {
   }
 
   console.log("백필 완료");
+  console.log(`전체: ${entries.length}`);
   console.log(`생성: ${createdCount}`);
   console.log(`건너뜀: ${skippedCount}`);
   console.log(`실패: ${failedCount}`);
+  console.log(
+    `Notion API 호출: 조회 ${apiCallCounts.query}회, ` +
+      `생성 ${apiCallCounts.create}회, ` +
+      `총 ${apiCallCounts.query + apiCallCounts.create}회`,
+  );
 }
 
 main().catch(error => {
