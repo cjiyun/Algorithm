@@ -1,16 +1,14 @@
+def to_day(date):
+    y, m, d = map(int, date.split('.'))
+    return y * 12 * 28 + m * 28 + d
+
 def solution(today, terms, privacies):
-    terms_dic = {t: int(p) for t, p in (term.split() for term in terms)}
-    ans = []
+    terms_dic = {term[0]: int(term[2:]) * 28 for term in terms}
+    today = to_day(today)
     
-    for i, privacy in enumerate(privacies):
-        d, t = privacy.split()
-        sy, sm, sd = map(int, d.split('.'))
-        ey, em = divmod(terms_dic[t] + sy * 12 + sm - 1, 12)
-        em, ed = divmod((em + 1) * 28 + sd - 1, 28)
-        
-        end = ''.join([str(ey), '.', str(em).zfill(2), '.', str(ed).zfill(2)])
-        
-        if end < today:
-            ans.append(i + 1)
+    expired = [
+        i + 1 for i, privacy in enumerate(privacies)
+        if to_day(privacy[:-2]) + terms_dic[privacy[-1]] <= today
+    ]
     
-    return ans
+    return expired
