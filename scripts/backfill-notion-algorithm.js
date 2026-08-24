@@ -181,12 +181,6 @@ function githubTreeUrl(dirPath) {
   return `https://github.com/${repo}/tree/${branch}/${encodePath(dirPath)}`;
 }
 
-function githubBlobUrl(filePath) {
-  if (!filePath) return null;
-
-  return `https://github.com/${repo}/blob/${branch}/${encodePath(filePath)}`;
-}
-
 function getDataSourceId(platformKey) {
   return DATA_SOURCE_IDS[platformKey] || null;
 }
@@ -231,24 +225,17 @@ function createUrl(url) {
   };
 }
 
+const LEGACY_COMMIT_TABLE_HEADER = ["날짜", "커밋 번호", "실행 시간", "메모리"];
+const COMMIT_TABLE_HEADER = [...LEGACY_COMMIT_TABLE_HEADER, "언어"];
+
 function buildProperties(info) {
   const properties = {
     문제명: createTitle(info.title),
-    날짜: {
-      date: {
-        start: info.date,
-      },
-    },
-    플랫폼: createSelect(info.platformName),
+    날짜: { date: { start: info.date } },
     난이도: createSelect(info.difficulty),
     "문제 번호": createRichText(info.problemNumber),
     언어: createSelect(info.language),
-    "실행 시간": createRichText(info.time),
-    메모리: createRichText(info.memory),
-    "GitHub Commit": createUrl(info.lastCommitUrl),
     "문제 폴더": createUrl(githubTreeUrl(info.problemDir)),
-    "풀이 파일": createUrl(githubBlobUrl(info.solutionFile)),
-    README: createUrl(githubBlobUrl(info.readmeFile)),
     "복습 필요": {
       checkbox: false,
     },
@@ -263,22 +250,45 @@ function buildProperties(info) {
   return properties;
 }
 
-function getProblemLastCommitInfo(problemDir) {
-  const timestamp = run(`git log -1 --format=%cI -- "${problemDir}"`);
-  const sha = run(`git log -1 --format=%H -- "${problemDir}"`);
-  const message = run(`git log -1 --format=%B -- "${problemDir}"`);
-  const commitInfo = parseCommitMessage(message);
+function addCommitInfos(entries) {
+  if (entries.length === 0) return;
 
-  return {
-    date: timestamp
-      ? timestamp.slice(0, 10)
-      : new Date().toISOString().slice(0, 10),
-    commitUrl: sha
-      ? `https://github.com/${repo}/commit/${sha}`
-      : null,
-    time: commitInfo.time,
-    memory: commitInfo.memory,
-  };
+  const entriesByDir = new Map(entries.map(entry => [entry.problemDir, entry]));
+  const roots = [...new Set(entries.map(entry => entry.problemDir.split("/")[0]))];
+  const output = run(
+    `git -c core.quotePath=false log ` +
+      `--format=%x1e%H%x1f%cI%x1f%B%x1d --name-only -z -- ` +
+      roots.map(root => `"${root}"`).join(" "),
+  );
+  const latestSolutionByEntry = new Map();
+  const records = output.split("\x1e").filter(Boolean).reverse();
+
+  for (const record of records) {
+    const [metadata, changedPaths = ""] = record.split("\x1d");
+    const [sha, timestamp, ...messageParts] = metadata.split("\x1f");
+    const commitInfo = parseCommitMessage(messageParts.join("\x1f"));
+    const changedFilesByEntry = new Map();
+
+    for (const file of changedPaths.split("\0").map(value => value.trim()).filter(Boolean)) {
+      const entry = entriesByDir.get(path.posix.dirname(file));
+      if (!entry) continue;
+      if (!changedFilesByEntry.has(entry)) changedFilesByEntry.set(entry, []);
+      changedFilesByEntry.get(entry).push(file);
+    }
+
+    for (const [entry, changedFiles] of changedFilesByEntry) {
+      const changedSolution = changedFiles.find(isSolutionFile);
+      if (changedSolution) latestSolutionByEntry.set(entry, changedSolution);
+      const solutionFile = latestSolutionByEntry.get(entry) || entry.solutionFile;
+      entry.commits.unshift({
+        date: timestamp.slice(0, 10),
+        time: commitInfo.time,
+        memory: commitInfo.memory,
+        sha,
+        language: getLanguage(solutionFile),
+      });
+    }
+  }
 }
 
 function listDirectories(dirPath) {
@@ -290,7 +300,7 @@ function listDirectories(dirPath) {
     .map(dirent => dirent.name);
 }
 
-function findProblemEntries() {
+function findProblemEntries(targetProblemNumber) {
   const root = process.cwd();
 
   const platformDirs = listDirectories(root).filter(dirName => {
@@ -310,6 +320,13 @@ function findProblemEntries() {
       const problemDirs = listDirectories(difficultyPath);
 
       for (const problemFolder of problemDirs) {
+        const { problemNumber, title } =
+          parseProblemFolder(problemFolder);
+
+        if (targetProblemNumber && problemNumber !== targetProblemNumber) {
+          continue;
+        }
+
         const problemPath = path.join(difficultyPath, problemFolder);
         const files = fs.readdirSync(problemPath, {
           withFileTypes: true,
@@ -322,17 +339,13 @@ function findProblemEntries() {
         const solutionFileName =
           fileNames.find(fileName => isSolutionFile(fileName)) || "";
 
-        const readmeFileName =
-          fileNames.find(
-            fileName => fileName.toLowerCase() === "readme.md",
-          ) || "";
+        const hasReadme = fileNames.some(
+          fileName => fileName.toLowerCase() === "readme.md",
+        );
 
-        if (!solutionFileName && !readmeFileName) {
+        if (!solutionFileName && !hasReadme) {
           continue;
         }
-
-        const { problemNumber, title } =
-          parseProblemFolder(problemFolder);
 
         const problemDir =
           `${platformDir}/${difficultyDir}/${problemFolder}`;
@@ -340,12 +353,6 @@ function findProblemEntries() {
         const solutionFile = solutionFileName
           ? `${problemDir}/${solutionFileName}`
           : "";
-
-        const readmeFile = readmeFileName
-          ? `${problemDir}/${readmeFileName}`
-          : "";
-
-        const commitInfo = getProblemLastCommitInfo(problemDir);
 
         entries.push({
           platformKey: platform.key,
@@ -358,15 +365,26 @@ function findProblemEntries() {
           title,
           problemDir,
           solutionFile,
-          readmeFile,
           language: getLanguage(solutionFile),
-          date: commitInfo.date,
-          lastCommitUrl: commitInfo.commitUrl,
-          time: commitInfo.time,
-          memory: commitInfo.memory,
+          date: "",
+          time: "",
+          memory: "",
+          sha: "",
+          commits: [],
         });
       }
     }
+  }
+
+  addCommitInfos(entries);
+
+  for (const entry of entries) {
+    const latestCommit = entry.commits[0] || {};
+    entry.language = latestCommit.language || entry.language;
+    entry.date = latestCommit.date || "";
+    entry.time = latestCommit.time || "";
+    entry.memory = latestCommit.memory || "";
+    entry.sha = latestCommit.sha || "";
   }
 
   return entries;
@@ -418,8 +436,9 @@ async function getExistingRecords(dataSourceId) {
 }
 
 function getEntryKey(entry, records) {
-  if (entry.problemNumber && records.keys.has(`number:${entry.problemNumber}`)) {
-    return `number:${entry.problemNumber}`;
+  if (entry.problemNumber) {
+    const key = `number:${entry.problemNumber}`;
+    return records.keys.has(key) ? key : null;
   }
 
   if (entry.title && records.keys.has(`title:${entry.title.toLowerCase()}`)) {
@@ -429,33 +448,12 @@ function getEntryKey(entry, records) {
   return null;
 }
 
-function getMissingMetadataProperties(page, entry) {
-  const properties = {};
-  const currentTime = getPropertyText(page.properties?.["실행 시간"]);
-  const currentMemory = getPropertyText(page.properties?.메모리);
-
-  if (!currentTime && entry.time) {
-    properties["실행 시간"] = createRichText(entry.time);
-  }
-
-  if (!currentMemory && entry.memory) {
-    properties.메모리 = createRichText(entry.memory);
-  }
-
-  return properties;
-}
-
-function entryExists(records, entry) {
-  return (
-    Boolean(getEntryKey(entry, records))
-  );
-}
-
 async function createNotionPage(dataSourceId, properties) {
   apiCallCounts.create += 1;
 
   return notion.pages.create({
     parent: {
+      type: "data_source_id",
       data_source_id: dataSourceId,
     },
     properties,
@@ -464,11 +462,155 @@ async function createNotionPage(dataSourceId, properties) {
 
 async function updateNotionPage(pageId, properties) {
   apiCallCounts.update += 1;
+  return notion.pages.update({ page_id: pageId, properties });
+}
 
-  return notion.pages.update({
-    page_id: pageId,
-    properties,
+function createTableCell(content = "") {
+  return [{ type: "text", text: { content: String(content || "") } }];
+}
+
+function createCommitCell(sha) {
+  return [{
+    type: "text",
+    text: {
+      content: sha.slice(0, 7),
+      link: { url: `https://github.com/${repo}/commit/${sha}` },
+    },
+  }];
+}
+
+function getTableCellText(cell = []) {
+  return cell
+    .map(text => text.plain_text || text.text?.content || "")
+    .join("");
+}
+
+function getCommitSha(cell = []) {
+  const url = cell[0]?.href || cell[0]?.text?.link?.url || "";
+  return url.split("/commit/")[1] || getTableCellText(cell);
+}
+
+function createCommitRow(entry) {
+  return {
+    object: "block",
+    type: "table_row",
+    table_row: {
+      cells: [
+        createTableCell(entry.date),
+        createCommitCell(entry.sha),
+        createTableCell(entry.time),
+        createTableCell(entry.memory),
+        createTableCell(entry.language),
+      ],
+    },
+  };
+}
+
+async function getCommitTable(pageId) {
+  apiCallCounts.query += 1;
+  const response = await notion.blocks.children.list({
+    block_id: pageId,
+    page_size: 100,
   });
+
+  for (const table of response.results.filter(block => block.type === "table")) {
+    apiCallCounts.query += 1;
+    const rows = await notion.blocks.children.list({
+      block_id: table.id,
+      page_size: 1,
+    });
+    const header = rows.results[0]?.table_row?.cells?.map(getTableCellText);
+    if (
+      JSON.stringify(header) === JSON.stringify(COMMIT_TABLE_HEADER) ||
+      JSON.stringify(header) === JSON.stringify(LEGACY_COMMIT_TABLE_HEADER)
+    ) {
+      return {
+        table,
+        legacy: header.length === 4,
+        atStart: response.results[0]?.id === table.id,
+      };
+    }
+  }
+
+  return null;
+}
+
+async function addCommitRecords(pageId, entry) {
+  if (entry.commits.length === 0) return 0;
+
+  const commitTable = await getCommitTable(pageId);
+
+  if (!commitTable || commitTable.legacy || !commitTable.atStart) {
+    apiCallCounts.update += 1;
+    await notion.blocks.children.append({
+      block_id: pageId,
+      position: { type: "start" },
+      children: [{
+        object: "block",
+        type: "table",
+        table: {
+          table_width: 5,
+          has_column_header: true,
+          has_row_header: false,
+          children: [{
+            object: "block",
+            type: "table_row",
+            table_row: { cells: COMMIT_TABLE_HEADER.map(createTableCell) },
+          }, ...entry.commits.map(createCommitRow)],
+        },
+      }],
+    });
+
+    if (commitTable) {
+      apiCallCounts.update += 1;
+      await notion.blocks.delete({ block_id: commitTable.table.id });
+    }
+    return entry.commits.length;
+  }
+
+  const table = commitTable.table;
+
+  apiCallCounts.query += 1;
+  const rows = await notion.blocks.children.list({
+    block_id: table.id,
+    page_size: 100,
+  });
+  const existingRows = new Map(rows.results.map(row => [
+    getCommitSha(row.table_row?.cells?.[1]),
+    row,
+  ]));
+  const missingCommits = entry.commits.filter(
+    commit => !existingRows.has(commit.sha),
+  );
+  const incorrectRows = entry.commits.filter(commit => {
+    const existingRow = existingRows.get(commit.sha);
+    return existingRow &&
+      (
+        getTableCellText(existingRow.table_row?.cells?.[1]) !==
+          commit.sha.slice(0, 7) ||
+        existingRow.table_row?.cells?.[1]?.[0]?.href !==
+          `https://github.com/${repo}/commit/${commit.sha}` ||
+        getTableCellText(existingRow.table_row?.cells?.[4]) !== commit.language
+      );
+  });
+
+  if (missingCommits.length > 0) {
+    apiCallCounts.update += 1;
+    await notion.blocks.children.append({
+      block_id: table.id,
+      children: missingCommits.map(createCommitRow),
+    });
+  }
+
+  for (const commit of incorrectRows) {
+    apiCallCounts.update += 1;
+    await notion.blocks.update({
+      block_id: existingRows.get(commit.sha).id,
+      table_row: createCommitRow(commit).table_row,
+    });
+  }
+
+  return missingCommits.length + incorrectRows.length;
 }
 
 async function main() {
@@ -479,7 +621,10 @@ async function main() {
   console.log(`Repository: ${repo}`);
   console.log(`Branch: ${branch}`);
 
-  const entries = findProblemEntries();
+  const problemNumber = process.argv
+    .find(argument => argument.startsWith("--problem="))
+    ?.split("=")[1];
+  const entries = findProblemEntries(problemNumber);
 
   console.log(`찾은 기존 문제 수: ${entries.length}`);
 
@@ -526,23 +671,40 @@ async function main() {
 
       if (exists) {
         const page = existingRecords.pages.get(entryKey);
-        const properties = getMissingMetadataProperties(page, entry);
+        const addedCount = await addCommitRecords(page.id, entry);
+        const currentDate = page.properties?.날짜?.date?.start || "";
+        const currentLanguage = page.properties?.언어?.select?.name || "";
+        const properties = {};
 
+        if (entry.date && currentDate !== entry.date) {
+          properties.날짜 = { date: { start: entry.date } };
+        }
+        if (entry.language && currentLanguage !== entry.language) {
+          properties.언어 = createSelect(entry.language);
+        }
         if (Object.keys(properties).length > 0) {
           await updateNotionPage(page.id, properties);
-          updatedCount += 1;
-          console.log(
-            `기존 정보 보완: [${entry.platformName}] ${entry.title}`,
-          );
         }
 
-        skippedCount += 1;
+        if (addedCount > 0 || Object.keys(properties).length > 0) {
+          updatedCount += 1;
+          console.log(
+            `${addedCount > 0 ? `커밋 ${addedCount}개 추가` : "메타데이터 갱신"}: ` +
+              `[${entry.platformName}] ${entry.title}`,
+          );
+        } else {
+          skippedCount += 1;
+        }
         continue;
       }
 
       const properties = buildProperties(entry);
 
-      await createNotionPage(dataSourceId, properties);
+      const createdPage = await createNotionPage(
+        dataSourceId,
+        properties,
+      );
+      await addCommitRecords(createdPage.id, entry);
 
       if (entry.problemNumber) {
         existingRecords.keys.add(`number:${entry.problemNumber}`);
