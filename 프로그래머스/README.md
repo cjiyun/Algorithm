@@ -19,3 +19,9 @@
 | 02 |   타겟 넘버   | [43165](https://programmers.co.kr/learn/courses/30/lessons/43165) | DFS | [보기](./2/43165. 타겟 넘버/타겟 넘버.js) |  |
 
 ### 1️⃣ Level 1
+
+[Lv.1]: https://img.shields.io/badge/Lv.1-0078FF?style=flat-square
+[Lv.2]: https://img.shields.io/badge/Lv.2-6EC65D?style=flat-square
+[Lv.3]: https://img.shields.io/badge/Lv.3-F3AC3C?style=flat-square
+[Lv.4]: https://img.shields.io/badge/Lv.4-ED7436?style=flat-square
+[Lv.5]: https://img.shields.io/badge/Lv.5-B95FDA?style=flat-square
