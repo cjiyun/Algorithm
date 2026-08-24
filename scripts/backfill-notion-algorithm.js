@@ -7,6 +7,7 @@ const notion = new Client({ auth: process.env.NOTION_TOKEN });
 const apiCallCounts = {
   query: 0,
   create: 0,
+  update: 0,
 };
 
 const repo = process.env.GITHUB_REPOSITORY || "cjiyun/Algorithm";
@@ -151,6 +152,24 @@ function getLanguage(filePath = "") {
   return languageMap[ext] || "Unknown";
 }
 
+function parseCommitMessage(message) {
+  const match = message.match(
+    /^\[[^\]]+\]\s*Title:\s*(.*?),\s*Time:\s*(.*?),\s*Memory:\s*(.*?)\s*-BaekjoonHub/i,
+  );
+
+  if (!match) {
+    return {
+      time: "",
+      memory: "",
+    };
+  }
+
+  return {
+    time: normalizeSpaces(match[2]),
+    memory: normalizeSpaces(match[3]),
+  };
+}
+
 function isSolutionFile(fileName) {
   const ext = path.extname(fileName).toLowerCase();
   return SOLUTION_EXTENSIONS.includes(ext);
@@ -224,8 +243,8 @@ function buildProperties(info) {
     난이도: createSelect(info.difficulty),
     "문제 번호": createRichText(info.problemNumber),
     언어: createSelect(info.language),
-    "실행 시간": createRichText(""),
-    메모리: createRichText(""),
+    "실행 시간": createRichText(info.time),
+    메모리: createRichText(info.memory),
     "GitHub Commit": createUrl(info.lastCommitUrl),
     "문제 폴더": createUrl(githubTreeUrl(info.problemDir)),
     "풀이 파일": createUrl(githubBlobUrl(info.solutionFile)),
@@ -247,6 +266,8 @@ function buildProperties(info) {
 function getProblemLastCommitInfo(problemDir) {
   const timestamp = run(`git log -1 --format=%cI -- "${problemDir}"`);
   const sha = run(`git log -1 --format=%H -- "${problemDir}"`);
+  const message = run(`git log -1 --format=%B -- "${problemDir}"`);
+  const commitInfo = parseCommitMessage(message);
 
   return {
     date: timestamp
@@ -255,6 +276,8 @@ function getProblemLastCommitInfo(problemDir) {
     commitUrl: sha
       ? `https://github.com/${repo}/commit/${sha}`
       : null,
+    time: commitInfo.time,
+    memory: commitInfo.memory,
   };
 }
 
@@ -339,6 +362,8 @@ function findProblemEntries() {
           language: getLanguage(solutionFile),
           date: commitInfo.date,
           lastCommitUrl: commitInfo.commitUrl,
+          time: commitInfo.time,
+          memory: commitInfo.memory,
         });
       }
     }
@@ -355,16 +380,25 @@ function getPropertyText(property) {
   );
 }
 
-function addExistingKeys(keys, page) {
+function addExistingPage(records, page) {
   const problemNumber = getPropertyText(page.properties?.["문제 번호"]);
   const title = getPropertyText(page.properties?.["문제명"]);
 
-  if (problemNumber) keys.add(`number:${problemNumber}`);
-  if (title) keys.add(`title:${title.toLowerCase()}`);
+  if (problemNumber) {
+    records.keys.add(`number:${problemNumber}`);
+    records.pages.set(`number:${problemNumber}`, page);
+  }
+  if (title) {
+    records.keys.add(`title:${title.toLowerCase()}`);
+    records.pages.set(`title:${title.toLowerCase()}`, page);
+  }
 }
 
-async function getExistingKeys(dataSourceId) {
-  const keys = new Set();
+async function getExistingRecords(dataSourceId) {
+  const records = {
+    keys: new Set(),
+    pages: new Map(),
+  };
   let startCursor;
 
   do {
@@ -376,17 +410,44 @@ async function getExistingKeys(dataSourceId) {
       ...(startCursor ? { start_cursor: startCursor } : {}),
     });
 
-    response.results.forEach(page => addExistingKeys(keys, page));
+    response.results.forEach(page => addExistingPage(records, page));
     startCursor = response.has_more ? response.next_cursor : null;
   } while (startCursor);
 
-  return keys;
+  return records;
 }
 
-function entryExists(keys, entry) {
+function getEntryKey(entry, records) {
+  if (entry.problemNumber && records.keys.has(`number:${entry.problemNumber}`)) {
+    return `number:${entry.problemNumber}`;
+  }
+
+  if (entry.title && records.keys.has(`title:${entry.title.toLowerCase()}`)) {
+    return `title:${entry.title.toLowerCase()}`;
+  }
+
+  return null;
+}
+
+function getMissingMetadataProperties(page, entry) {
+  const properties = {};
+  const currentTime = getPropertyText(page.properties?.["실행 시간"]);
+  const currentMemory = getPropertyText(page.properties?.메모리);
+
+  if (!currentTime && entry.time) {
+    properties["실행 시간"] = createRichText(entry.time);
+  }
+
+  if (!currentMemory && entry.memory) {
+    properties.메모리 = createRichText(entry.memory);
+  }
+
+  return properties;
+}
+
+function entryExists(records, entry) {
   return (
-    (entry.problemNumber && keys.has(`number:${entry.problemNumber}`)) ||
-    (entry.title && keys.has(`title:${entry.title.toLowerCase()}`))
+    Boolean(getEntryKey(entry, records))
   );
 }
 
@@ -397,6 +458,15 @@ async function createNotionPage(dataSourceId, properties) {
     parent: {
       data_source_id: dataSourceId,
     },
+    properties,
+  });
+}
+
+async function updateNotionPage(pageId, properties) {
+  apiCallCounts.update += 1;
+
+  return notion.pages.update({
+    page_id: pageId,
     properties,
   });
 }
@@ -427,11 +497,12 @@ async function main() {
 
     existingKeysByDataSource.set(
       dataSourceId,
-      await getExistingKeys(dataSourceId),
+      await getExistingRecords(dataSourceId),
     );
   }
 
   let createdCount = 0;
+  let updatedCount = 0;
   let skippedCount = 0;
   let failedCount = 0;
 
@@ -449,10 +520,22 @@ async function main() {
     }
 
     try {
-      const existingKeys = existingKeysByDataSource.get(dataSourceId);
-      const exists = entryExists(existingKeys, entry);
+      const existingRecords = existingKeysByDataSource.get(dataSourceId);
+      const entryKey = getEntryKey(entry, existingRecords);
+      const exists = Boolean(entryKey);
 
       if (exists) {
+        const page = existingRecords.pages.get(entryKey);
+        const properties = getMissingMetadataProperties(page, entry);
+
+        if (Object.keys(properties).length > 0) {
+          await updateNotionPage(page.id, properties);
+          updatedCount += 1;
+          console.log(
+            `기존 정보 보완: [${entry.platformName}] ${entry.title}`,
+          );
+        }
+
         skippedCount += 1;
         continue;
       }
@@ -462,10 +545,10 @@ async function main() {
       await createNotionPage(dataSourceId, properties);
 
       if (entry.problemNumber) {
-        existingKeys.add(`number:${entry.problemNumber}`);
+        existingRecords.keys.add(`number:${entry.problemNumber}`);
       }
       if (entry.title) {
-        existingKeys.add(`title:${entry.title.toLowerCase()}`);
+        existingRecords.keys.add(`title:${entry.title.toLowerCase()}`);
       }
 
       console.log(
@@ -489,12 +572,14 @@ async function main() {
   console.log("백필 완료");
   console.log(`전체: ${entries.length}`);
   console.log(`생성: ${createdCount}`);
+  console.log(`보완: ${updatedCount}`);
   console.log(`건너뜀: ${skippedCount}`);
   console.log(`실패: ${failedCount}`);
   console.log(
     `Notion API 호출: 조회 ${apiCallCounts.query}회, ` +
       `생성 ${apiCallCounts.create}회, ` +
-      `총 ${apiCallCounts.query + apiCallCounts.create}회`,
+      `수정 ${apiCallCounts.update}회, ` +
+      `총 ${apiCallCounts.query + apiCallCounts.create + apiCallCounts.update}회`,
   );
 }
 
