@@ -8,7 +8,7 @@ Study Algorithms
 > **Baekjoon** &nbsp; [↗][백준]  
 >   : 백준 온라인 저지 문제 풀이  
 > **Programmers** &nbsp; [↗][프로그래머스]  
->   : 프로그래머스 문제 풀이
+>   : 프로그래머스 문제 풀이  
 > **SWEA** &nbsp; [↗][SWEA]  
 >   : SW Expert Academy 문제 풀이
 
