@@ -1,12 +1,10 @@
 def solution(wallpaper):
-    lux, luy, rdx, rdy = len(wallpaper), len(wallpaper[0]), 0, 0
-    for i, row in enumerate(wallpaper):
-        if '#' not in row:
-            continue
-        
-        lux = min(lux, i)
-        luy = min(luy, row.index('#'))
-        rdx = i + 1
-        rdy = max(rdy, row.rfind('#') + 1)
+    x, y = [], []
     
-    return [lux, luy, rdx, rdy]
+    for i, row in enumerate(wallpaper):
+        if '#' in row:
+            x.append(i)
+            y.append(row.index('#'))
+            y.append(row.rfind('#'))
+    
+    return [min(x), min(y), max(x) + 1, max(y) + 1]
