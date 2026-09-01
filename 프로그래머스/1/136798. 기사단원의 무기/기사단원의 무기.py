@@ -1,5 +1,5 @@
 def solution(number, limit, power):
-    factor_cnt = []
+    ans = 0
     
     for i in range(1, number + 1):
         cnt = 0
@@ -8,11 +8,11 @@ def solution(number, limit, power):
             if i % j != 0:
                 continue
             
-            if j ** 2 != i:
+            if j * j != i:
                 cnt += 1
             
             cnt += 1
         
-        factor_cnt.append(cnt)
+        ans += cnt if cnt <= limit else power
     
-    return sum(x if x <= limit else power for x in factor_cnt)
+    return ans
