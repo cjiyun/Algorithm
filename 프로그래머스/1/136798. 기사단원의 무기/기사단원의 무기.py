@@ -1,18 +1,11 @@
 def solution(number, limit, power):
-    ans = 0
+    factor_cnt = [0] * (number + 1)
     
     for i in range(1, number + 1):
-        cnt = 0
-        
-        for j in range(1, int(i ** 0.5) + 1):
-            if i % j != 0:
-                continue
-            
-            if j * j != i:
-                cnt += 1
-            
-            cnt += 1
-        
-        ans += cnt if cnt <= limit else power
+        for j in range(i, number + 1, i):
+            factor_cnt[j] += 1
     
-    return ans
+    return sum(
+        x if x <= limit else power
+        for x in factor_cnt[1:]
+    )
