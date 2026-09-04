@@ -2,10 +2,6 @@ from collections import deque
 
 def solution(maps):
     n, m = len(maps), len(maps[0])
-    
-    if all(l == 'X' * m for l in maps):
-        return [-1]
-    
     visited = [[False] * m for _ in range(n)]
     moves = [(0, 1), (0, -1), (1, 0), (-1, 0)]
     ans = []
@@ -16,7 +12,7 @@ def solution(maps):
         cnt = int(maps[sr][sc])
         
         while q:
-            r, c = q.pop()
+            r, c = q.popleft()
             for dr, dc in moves:
                 nr, nc = r + dr, c + dc
                 
@@ -33,7 +29,6 @@ def solution(maps):
         for j in range(m):
             if maps[i][j] == 'X' or visited[i][j]:
                 continue
-            print(i, j)
             ans.append(bfs(i, j))
     
-    return sorted(ans)
+    return sorted(ans) if ans else [-1]
