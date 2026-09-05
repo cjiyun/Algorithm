@@ -1,6 +1,4 @@
-from collections import deque
 def solution(s):
-    q = deque(s)
     pairs = {')': '(', '}':'{', ']':'['}
     cnt = 0
     
@@ -18,10 +16,7 @@ def solution(s):
         
         return not stack
     
-    for _ in range(len(q)):
-        if is_valid(q):
-            cnt += 1
-        
-        q.append(q.popleft())
+    for i in range(len(s)):
+        cnt += is_valid(s[i:] + s[:i])
     
     return cnt
