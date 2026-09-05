@@ -1,55 +1,40 @@
 def solution(n, info):
-    best = [-1]
-    max_diff = 0
-    ryan = [0] * 11
+    ans = [0] * 11
+    result = 0
     
-    def get_score_diff():
-        r_s = 0
-        a_s = 0
+    def score(r):
+        diff = 0
         
         for i in range(11):
-            s = 10 - i
+            if not r[i] and not info[i]:
+                continue
             
-            if ryan[i] > info[i]:
-                r_s += s
-            elif info[i] > 0:
-                a_s += s
+            if r[i] > info[i]:
+                diff += 10 - i
+            else:
+                diff -= 10 - i
         
-        return r_s - a_s
+        return diff
     
-    def is_better(candi, cur):
-        for i in range(10, -1, -1):
-            if candi[i] > cur[i]:
-                return True
-            if candi[i] < cur[i]:
-                return False
-        return False
-    
-    def dfs(i, arrows):
-        nonlocal best, max_diff
+    def dfs(i, left, r):
+        nonlocal ans, result
         
-        if i == 11:
-            ryan[10] += arrows
-            diff = get_score_diff()
+        if not left:
+            diff = score(r)
+            if diff > result:
+                result = diff
+                ans = r[:]
             
-            if diff > 0:
-                if diff > max_diff:
-                    max_diff = diff
-                    best = ryan[:]
-                elif diff == max_diff and is_better(ryan, best):
-                    best = ryan[:]
-            
-            ryan[10] -= arrows
             return
         
-        need = info[i] + 1
-        if arrows >= need:
-            ryan[i] = need
-            dfs(i + 1, arrows - need)
-            ryan[i] = 0
+        if i < 0:
+            return
         
-        dfs(i + 1, arrows)
+        for l in range(left, -1, -1):
+            r[i] = l
+            dfs(i - 1, left - l, r)
+            r[i] = 0
     
-    dfs(0, n)
+    dfs(10, n, ans[:])
     
-    return best
+    return ans if result > 0 else [-1]
