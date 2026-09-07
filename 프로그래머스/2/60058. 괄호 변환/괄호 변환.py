@@ -2,28 +2,24 @@ def solution(p):
     if not p:
         return ''
     
-    l = r = 0
+    bal = 0
+    is_cor = True
     
     for i, ch in enumerate(p):
         if ch == '(':
-            l += 1
+            bal += 1
         else:
-            r += 1
+            bal -= 1
         
-        if l == r:
+        if bal < 0:
+            is_cor = False
+        
+        if bal == 0:
             u = p[:i + 1]
             v = p[i + 1:]
             break
     
-    stack = []
-    for ch in u:
-        if ch == ')':
-            if not stack:
-                break
-            stack.pop()
-        else:
-            stack.append(ch)
-    else:
+    if is_cor:
         return u + solution(v)
     
     return '(' + solution(v) + ')' + ''.join(')' if ch == '(' else '(' for ch in u[1:-1])
