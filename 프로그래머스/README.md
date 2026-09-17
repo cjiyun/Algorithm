@@ -67,7 +67,7 @@
 | 04 | 땅따먹기 | [12913](https://school.programmers.co.kr/learn/courses/30/lessons/12913) | ![Lv.2] | [py](./2/12913.%E2%80%85%EB%95%85%EB%94%B0%EB%A8%B9%EA%B8%B0/%EB%95%85%EB%94%B0%EB%A8%B9%EA%B8%B0.py) |  |
 | 05 | N-Queen | [12952](https://school.programmers.co.kr/learn/courses/30/lessons/12952) | ![Lv.2] | [py](./2/12952.%E2%80%85N%EF%BC%8DQueen/N%EF%BC%8DQueen.py) |  |
 | 06 | 전화번호 목록 | [42577](https://school.programmers.co.kr/learn/courses/30/lessons/42577) | ![Lv.2] | [py](./2/42577.%E2%80%85%EC%A0%84%ED%99%94%EB%B2%88%ED%98%B8%E2%80%85%EB%AA%A9%EB%A1%9D/%EC%A0%84%ED%99%94%EB%B2%88%ED%98%B8%E2%80%85%EB%AA%A9%EB%A1%9D.py) |  |
-| 07 | 의상 | [42578](https://school.programmers.co.kr/learn/courses/30/lessons/42578) | ![Lv.2] | [py](./2/42578.%E2%80%85%EC%9D%98%EC%83%81/%EC%9D%98%EC%83%81.py) |  |
+| 07 | 의상 | [42578](https://school.programmers.co.kr/learn/courses/30/lessons/42578) | ![Lv.2] | [py](./2/42578.%E2%80%85%EC%9D%98%EC%83%81/%EC%9D%98%EC%83%81.py) | ✅ |
 | 08 | 다리를 지나는 트럭 | [42583](https://school.programmers.co.kr/learn/courses/30/lessons/42583?language=javascript) | ![Lv.2] | [js](./2/42583.%E2%80%85%EB%8B%A4%EB%A6%AC%EB%A5%BC%E2%80%85%EC%A7%80%EB%82%98%EB%8A%94%E2%80%85%ED%8A%B8%EB%9F%AD/%EB%8B%A4%EB%A6%AC%EB%A5%BC%E2%80%85%EC%A7%80%EB%82%98%EB%8A%94%E2%80%85%ED%8A%B8%EB%9F%AD.js) |  |
 | 09 | 주식가격 | [42584](https://school.programmers.co.kr/learn/courses/30/lessons/42584?language=javascript) | ![Lv.2] | [js](./2/42584.%E2%80%85%EC%A3%BC%EC%8B%9D%EA%B0%80%EA%B2%A9/%EC%A3%BC%EC%8B%9D%EA%B0%80%EA%B2%A9.js) |  |
 | 10 | 기능개발 | [42586](https://school.programmers.co.kr/learn/courses/30/lessons/42586) | ![Lv.2] | [js](./2/42586.%E2%80%85%EA%B8%B0%EB%8A%A5%EA%B0%9C%EB%B0%9C/%EA%B8%B0%EB%8A%A5%EA%B0%9C%EB%B0%9C.js) | ✅ |
