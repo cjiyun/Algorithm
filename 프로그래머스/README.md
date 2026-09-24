@@ -159,6 +159,7 @@
 | 40 | 유연근무제 | [388351](https://school.programmers.co.kr/learn/courses/30/lessons/388351) | ![Lv.1] | [py](./1/388351.%E2%80%85%EC%9C%A0%EC%97%B0%EA%B7%BC%EB%AC%B4%EC%A0%9C/%EC%9C%A0%EC%97%B0%EA%B7%BC%EB%AC%B4%EC%A0%9C.py) |  |
 | 41 | 택배 상자 꺼내기 | [389478](https://school.programmers.co.kr/learn/courses/30/lessons/389478) | ![Lv.1] | [py](./1/389478.%E2%80%85%ED%83%9D%EB%B0%B0%E2%80%85%EC%83%81%EC%9E%90%E2%80%85%EA%BA%BC%EB%82%B4%EA%B8%B0/%ED%83%9D%EB%B0%B0%E2%80%85%EC%83%81%EC%9E%90%E2%80%85%EA%BA%BC%EB%82%B4%EA%B8%B0.py) |  |
 | 42 | 중요한 단어를 스포 방지 | [468370](https://school.programmers.co.kr/learn/courses/30/lessons/468370) | ![Lv.1] | [py](./1/468370.%E2%80%85%EC%A4%91%EC%9A%94%ED%95%9C%E2%80%85%EB%8B%A8%EC%96%B4%EB%A5%BC%E2%80%85%EC%8A%A4%ED%8F%AC%E2%80%85%EB%B0%A9%EC%A7%80/%EC%A4%91%EC%9A%94%ED%95%9C%E2%80%85%EB%8B%A8%EC%96%B4%EB%A5%BC%E2%80%85%EC%8A%A4%ED%8F%AC%E2%80%85%EB%B0%A9%EC%A7%80.py) |  |
+| 43 | 노란불 신호등 | [468371](https://school.programmers.co.kr/learn/courses/30/lessons/468371?language=python3) | ![Lv.1] | [py](./1/468371.%E2%80%85%EB%85%B8%EB%9E%80%EB%B6%88%E2%80%85%EC%8B%A0%ED%98%B8%EB%93%B1/%EB%85%B8%EB%9E%80%EB%B6%88%E2%80%85%EC%8B%A0%ED%98%B8%EB%93%B1.py) |  |
 
 ### 0️⃣ Level 0
 
