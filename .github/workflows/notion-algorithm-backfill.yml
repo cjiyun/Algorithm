@@ -1,0 +1,46 @@
+name: Backfill Algorithm Records to Notion
+
+on:
+  workflow_dispatch:
+    inputs:
+      problem_number:
+        description: "특정 문제 번호만 백필 (비워두면 전체)"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  backfill-notion:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Backfill Notion algorithm records
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_PROGRAMMERS_DATA_SOURCE_ID: ${{ secrets.NOTION_PROGRAMMERS_DATA_SOURCE_ID }}
+          NOTION_SWEA_DATA_SOURCE_ID: ${{ secrets.NOTION_SWEA_DATA_SOURCE_ID }}
+          NOTION_BAEKJOON_DATA_SOURCE_ID: ${{ secrets.NOTION_BAEKJOON_DATA_SOURCE_ID }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          PROBLEM_NUMBER: ${{ inputs.problem_number }}
+        run: |
+          if [ -n "$PROBLEM_NUMBER" ]; then
+            node scripts/backfill-notion-algorithm.js "--problem=$PROBLEM_NUMBER"
+          else
+            node scripts/backfill-notion-algorithm.js
+          fi
