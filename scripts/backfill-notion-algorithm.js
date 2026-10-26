@@ -219,6 +219,29 @@ function createSelect(name = "") {
   };
 }
 
+function createMultiSelect(names = []) {
+  const uniqueNames = [...new Set(names.filter(Boolean))];
+
+  if (uniqueNames.length === 0) return null;
+
+  return {
+    multi_select: uniqueNames.map(name => ({ name })),
+  };
+}
+
+function getMultiSelectNames(property) {
+  return property?.multi_select
+    ?.map(option => option.name)
+    .filter(Boolean) || [];
+}
+
+function getEntryLanguages(entry) {
+  return [...new Set([
+    ...entry.commits.map(commit => commit.language),
+    entry.language,
+  ].filter(Boolean))];
+}
+
 function createUrl(url) {
   return {
     url: url || null,
@@ -234,7 +257,7 @@ function buildProperties(info) {
     날짜: { date: { start: info.date } },
     난이도: createSelect(info.difficulty),
     "문제 번호": createRichText(info.problemNumber),
-    언어: createSelect(info.language),
+    언어: createMultiSelect(getEntryLanguages(info)),
     "문제 폴더": createUrl(githubTreeUrl(info.problemDir)),
     "복습 필요": {
       checkbox: false,
@@ -673,14 +696,21 @@ async function main() {
         const page = existingRecords.pages.get(entryKey);
         const addedCount = await addCommitRecords(page.id, entry);
         const currentDate = page.properties?.날짜?.date?.start || "";
-        const currentLanguage = page.properties?.언어?.select?.name || "";
+        const currentLanguages = getMultiSelectNames(
+          page.properties?.언어,
+        );
+        const entryLanguages = getEntryLanguages(entry);
+        const mergedLanguages = [...new Set([
+          ...currentLanguages,
+          ...entryLanguages,
+        ])];
         const properties = {};
 
         if (entry.date && currentDate !== entry.date) {
           properties.날짜 = { date: { start: entry.date } };
         }
-        if (entry.language && currentLanguage !== entry.language) {
-          properties.언어 = createSelect(entry.language);
+        if (mergedLanguages.length !== currentLanguages.length) {
+          properties.언어 = createMultiSelect(mergedLanguages);
         }
         if (Object.keys(properties).length > 0) {
           await updateNotionPage(page.id, properties);
