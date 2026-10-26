@@ -260,6 +260,20 @@ function githubTreeUrl(dirPath) {
   return `https://github.com/${repo}/tree/${branch}/${encodePath(dirPath)}`;
 }
 
+function getProblemUrl(info) {
+  if (
+    info.platformKey !== "programmers" ||
+    !info.problemNumber
+  ) {
+    return null;
+  }
+
+  return (
+    "https://school.programmers.co.kr/" +
+    `learn/courses/30/lessons/${info.problemNumber}`
+  );
+}
+
 function getDataSourceId(platformKey) {
   return DATA_SOURCE_IDS[platformKey] || null;
 }
@@ -331,6 +345,10 @@ function buildProperties(info, commitInfo) {
       checkbox: false,
     },
   };
+
+  if (info.platformKey === "programmers") {
+    properties["문제 링크"] = createUrl(getProblemUrl(info));
+  }
 
   Object.keys(properties).forEach(key => {
     if (properties[key] === null) {
@@ -681,16 +699,23 @@ async function main() {
     if (existingPage) {
       const currentDate = existingPage.properties?.날짜?.date?.start || "";
       const commitResult = await addCommitRecord(existingPage.id, commitInfo);
+      const properties = {};
+
+      if (info.platformKey === "programmers") {
+        properties["문제 링크"] = createUrl(getProblemUrl(info));
+      }
 
       if (
         commitResult.added &&
         commitResult.latest &&
         commitInfo.date >= currentDate
       ) {
-        await updateNotionPage(existingPage.id, {
-          날짜: { date: { start: commitInfo.date } },
-          언어: createSelect(commitInfo.language),
-        });
+        properties.날짜 = { date: { start: commitInfo.date } };
+        properties.언어 = createSelect(commitInfo.language);
+      }
+
+      if (Object.keys(properties).length > 0) {
+        await updateNotionPage(existingPage.id, properties);
       }
       console.log(
         `Notion 기존 기록 업데이트: ` +
