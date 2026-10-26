@@ -312,6 +312,22 @@ function createSelect(name = "") {
   };
 }
 
+function createMultiSelect(names = []) {
+  const uniqueNames = [...new Set(names.filter(Boolean))];
+
+  if (uniqueNames.length === 0) return null;
+
+  return {
+    multi_select: uniqueNames.map(name => ({ name })),
+  };
+}
+
+function getMultiSelectNames(property) {
+  return property?.multi_select
+    ?.map(option => option.name)
+    .filter(Boolean) || [];
+}
+
 function createUrl(url) {
   return {
     url: url || null,
@@ -339,7 +355,7 @@ function buildProperties(info, commitInfo) {
     날짜: { date: { start: commitInfo.date } },
     난이도: createSelect(difficulty),
     "문제 번호": createRichText(info.problemNumber),
-    언어: createSelect(language),
+    언어: createMultiSelect([language]),
     "문제 폴더": createUrl(githubTreeUrl(info.problemDir)),
     "복습 필요": {
       checkbox: false,
@@ -698,6 +714,9 @@ async function main() {
 
     if (existingPage) {
       const currentDate = existingPage.properties?.날짜?.date?.start || "";
+      const currentLanguages = getMultiSelectNames(
+        existingPage.properties?.언어,
+      );
       const commitResult = await addCommitRecord(existingPage.id, commitInfo);
       const properties = {};
 
@@ -706,12 +725,21 @@ async function main() {
       }
 
       if (
+        commitInfo.language &&
+        !currentLanguages.includes(commitInfo.language)
+      ) {
+        properties.언어 = createMultiSelect([
+          ...currentLanguages,
+          commitInfo.language,
+        ]);
+      }
+
+      if (
         commitResult.added &&
         commitResult.latest &&
         commitInfo.date >= currentDate
       ) {
         properties.날짜 = { date: { start: commitInfo.date } };
-        properties.언어 = createSelect(commitInfo.language);
       }
 
       if (Object.keys(properties).length > 0) {
