@@ -1,34 +1,49 @@
 import java.util.Arrays;
-import java.util.Map;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.Collections;
+import java.util.stream.IntStream;
 
 class Solution {
     public int solution(int a, int b, int c, int d) {
-        Map<Integer, Integer> cntMap = Arrays.stream(new int[] {a, b, c, d})
-            .boxed()
-            .collect(Collectors.groupingBy(n -> n, Collectors.summingInt(n -> 1)));
+        int[] cnt = new int[7];
+        cnt[a]++; cnt[b]++; cnt[c]++; cnt[d]++;
         
-        Map<Integer, List<Integer>> rankMap = cntMap.entrySet().stream()
-            .collect(Collectors.groupingBy(Map.Entry::getValue, Collectors.mapping(Map.Entry::getKey, Collectors.toList())));
+        int p = 0, q = 1, r = 0, min = 7;
         
-        if (rankMap.containsKey(4)) {
-            return rankMap.get(4).get(0) * 1111;
-        } else if (rankMap.containsKey(3)) {
-            int val = 10 * rankMap.get(3).get(0) + rankMap.get(1).get(0);
-                
-            return val * val;
-        } else if (rankMap.containsKey(2)) {
-            List<Integer> twoTimes = rankMap.get(2);
+        for (int i = 1; i < 7; i++) {
+            if (cnt[i] == 0) continue;
             
-            if (twoTimes.size() == 2) {
-                return (twoTimes.get(0) + twoTimes.get(1)) * Math.abs(twoTimes.get(0) - twoTimes.get(1));
+            if (cnt[i] == 4) {
+                return i * 1111;
             }
             
-            return rankMap.get(1).get(0) * rankMap.get(1).get(1);
-        } else {
-            return Collections.min(rankMap.get(1));
+            if (cnt[i] == 3) {
+                p = i;
+            } else if (cnt[i] == 1) {
+                min = Math.min(min, i);
+            }
         }
+        
+        if (p != 0) {
+            return (10 * p + min) * (10 * p + min);
+        }
+        
+        if (Arrays.stream(cnt).noneMatch(n -> n == 2)) {
+            return min;
+        }
+        
+        for (int i = 1; i < 7; i++) {
+            if (cnt[i] == 0 || i == p) continue;
+            
+            if (cnt[i] == 2 && p == 0) {
+                p = i;
+                continue;
+            }
+            if (cnt[i] == 2) {
+                return (p + i) * Math.abs(p - i);
+            }
+            
+            q *= i;
+        }
+        
+        return q;
     }
 }
