@@ -1,12 +1,12 @@
 import java.util.Arrays;
-import java.util.stream.IntStream;
 
 class Solution {
     public int solution(int a, int b, int c, int d) {
         int[] cnt = new int[7];
         cnt[a]++; cnt[b]++; cnt[c]++; cnt[d]++;
         
-        int p = 0, q = 1, r = 0, min = 7;
+        int p = 0, q = 1, min = 7;
+        boolean hasTwo = false;
         
         for (int i = 1; i < 7; i++) {
             if (cnt[i] == 0) continue;
@@ -19,6 +19,8 @@ class Solution {
                 p = i;
             } else if (cnt[i] == 1) {
                 min = Math.min(min, i);
+            } else {
+                hasTwo = true;
             }
         }
         
@@ -26,7 +28,7 @@ class Solution {
             return (10 * p + min) * (10 * p + min);
         }
         
-        if (Arrays.stream(cnt).noneMatch(n -> n == 2)) {
+        if (!hasTwo) {
             return min;
         }
         
