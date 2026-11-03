@@ -1,5 +1,5 @@
 import java.util.List;
-import java.util.ArrayList;
+import java.util.stream.IntStream;
 
 class Solution {
     public int[] solution(int[] answers) {
@@ -16,12 +16,8 @@ class Solution {
             }
         }
         
-        List<Integer> rst = new ArrayList<>();
+        int max = Math.max(scores[0], Math.max(scores[1], scores[2]));
         
-        for (int i = 0; i < 3; i++) {
-            if (scores[i] == Math.max(scores[0], Math.max(scores[1], scores[2]))) rst.add(i + 1);
-        }
-        
-        return rst.stream().mapToInt(Integer::intValue).toArray();
+        return IntStream.range(0, 3).filter(i -> scores[i] == max).map(i -> i + 1).toArray();
     }
 }
