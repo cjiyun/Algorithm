@@ -3,16 +3,17 @@ import java.util.stream.IntStream;
 
 class Solution {
     public int solution(int number, int limit, int power) {
+        int[] cnt = new int[number + 1];
         int total = 0;
         
         for (int i = 1; i <= number; i++) {
-            int cnt = 0;
-            
-            for (int j = 1; j * j <= i; j++) {
-                cnt += (i % j != 0) ? 0 : (j * j == i) ? 1 : 2;
+            for (int j = i; j <= number; j += i) {
+                cnt[j]++;
             }
-            
-            total += cnt > limit ? power : cnt;
+        }
+        
+        for (int i = 1; i <= number; i++) {
+            total += cnt[i] > limit ? power : cnt[i];
         }
         
         return total;
