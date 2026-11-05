@@ -11,10 +11,8 @@ class Solution {
                 continue;
             }
             
-            if (mode == 0) {
-                if (i % 2 == 0) ret += ch;
-            } else {
-                if (i % 2 != 0) ret += ch;
+            if (i % 2 == mode) {
+                ret += ch;
             }
         }
         
